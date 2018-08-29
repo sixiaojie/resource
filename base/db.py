@@ -8,7 +8,7 @@ class Mysql(object):
         db = pymysql.connect(host="localhost", user="root", password="", db="sijie", port=3306)
         return db
 
-    def _close(self):
+    def closed(self):
         self.db.close()
 
     def write(self,sql):

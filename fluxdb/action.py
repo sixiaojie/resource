@@ -67,7 +67,8 @@ class Action(object):
             sql = "insert into gthreshold(metric,groupname,groupnamecount) VALUES ('%s','%s',%d)" %(item,metric_info,count)
             self.db.write(sql)
 
-
+    def __del__(self):
+        self.db.closed()
 
 
 
