@@ -20,4 +20,13 @@ class Mysql(object):
             self.db.rollback()
 
     def read(self,sql):
-        pass
+        cur = self.db.cursor()
+        result = []
+        try:
+            cur.execute(sql)
+            for row in cur.fetchall():
+                result.append(row)
+        except Exception as e:
+            print(str(e))
+        return result
+

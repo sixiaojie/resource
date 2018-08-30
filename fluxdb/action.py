@@ -1,5 +1,9 @@
 from base import base
 from base import db
+from orm import init
+
+current = init.current
+last = init.last_month
 
 def SecondBiz_info():
     sql = "select count(*) from cpu"
@@ -20,6 +24,8 @@ class Action(object):
 
     ##这里阈值和实际取到的进行对比
     def Threshold(self):
+        self.db.write("truncate threshold")
+        self.db.write("truncate gthreshold")
         group_count = {}
         for metric in self.metrics.split(","):
             threshold = self.client.parser.get(metric,"threshold")
@@ -37,15 +43,18 @@ class Action(object):
                 else:
                     if item["values"][0][1] > int(threshold):
                         continue
-                sql = "insert into threshold(metric,hostname,groupname,minvalue,hostnamecount) VALUES ('%s','%s','%s',%f,%d)" %(metric,item["tags"]["hostname"],item["tags"]["groupname"],item["values"][0][1],1)
-                self.db.write(sql)
-                if group_count.get(item["tags"]["groupname"]) is None:
-                    group_count[item["tags"]["groupname"]] = {item["tags"]["hostname"]:{"metric":[metric]}}
-                else:
-                    if group_count[item["tags"]["groupname"]].get(item["tags"]["hostname"]) is None:
-                        group_count[item["tags"]["groupname"]][item["tags"]["hostname"]] = {"metric": [metric]}
+                sql = "select * from threshold_%s where hostname='%s' and metric='%s'" %(current,item["tags"]["hostname"],metric)
+                result = self.db.read(sql)
+                if len(result) == 0:
+                    sql = "insert into threshold_%s(metric,hostname,groupname,minvalue,hostnamecount) VALUES ('%s','%s','%s',%f,%d)" %(current,metric,item["tags"]["hostname"],item["tags"]["groupname"],item["values"][0][1],1)
+                    self.db.write(sql)
+                    if group_count.get(item["tags"]["groupname"]) is None:
+                        group_count[item["tags"]["groupname"]] = {item["tags"]["hostname"]:{"metric":[metric]}}
                     else:
-                        group_count[item["tags"]["groupname"]][item["tags"]["hostname"]]["metric"].append(metric)
+                        if group_count[item["tags"]["groupname"]].get(item["tags"]["hostname"]) is None:
+                            group_count[item["tags"]["groupname"]][item["tags"]["hostname"]] = {"metric": [metric]}
+                        else:
+                            group_count[item["tags"]["groupname"]][item["tags"]["hostname"]]["metric"].append(metric)
         ##这里得到业务组有哪些机器资源空闲，且空闲是哪些监控值
         for item in group_count:
             aa = {}
@@ -60,21 +69,44 @@ class Action(object):
             length = len(aa)
             i = 0
             for metric in aa:
-                if i == length -1:
+                if i == length -2:
                     metric_info += metric
                 else:
                     metric_info += metric+","
-            sql = "insert into gthreshold(metric,groupname,groupnamecount) VALUES ('%s','%s',%d)" %(item,metric_info,count)
-            self.db.write(sql)
+            sql = "select * from gthreshold_%s where groupname ='%s'" %(current,item)
+            if len(self.db.read(sql)) == 0:
+                sql = "insert into gthreshold_%s(metric,groupname,groupnamecount) VALUES ('%s','%s',%d)" %(current,metric_info,item,count)
+                self.db.write(sql)
 
     def __del__(self):
         self.db.closed()
 
+    def biz_info(self):
+        Isql = "select count(*) from cpu group by groupname,hostname"
+        data = self.client.execute(Isql)
+        for item in data["series"]:
+            result = self.db.read("select * from biz_info_%s where hostname='%s'" %(current,item["tags"]["hostname"]))
+            if len(result) == 0:
+                Msql = "insert into biz_info_%s(hostname,groupname) values('%s','%s')" %(current,item["tags"]["hostname"],item["tags"]["groupname"])
+                self.db.write(Msql)
+        self.db.write("truncate groupnamecount")
+        Msql = "select groupname,count(*) from biz_info_%s group by groupname" %current
+        result = self.db.read(Msql)
+        for row in result:
+            Msql = "insert into groupnamecount_%s(groupname,count) values('%s',%d)" %(current,row[0],row[1])
+            self.db.write(Msql)
+
+    ##这里得到机器数量差值
+    def increment(self):
+        sql = "select count(*) from groupnamecount_%s" %last
+        if len(self.db.read(sql)) == 0:
+            return
+        sql = "insert into increment select t2.groupname,(t2.count - t1.count) as `count` from groupnamecount_%s as t1, groupnamecount_%sas t2 where t1.id=t2.id;" %(last,current)
+        self.db.write(sql)
+        sql = "insert into increment select groupname,`count` from groupnamecount_%s where groupname not in (select groupname from increment);" %current
+        self.db.write(sql)
 
 
 
-
-action = Action()
-action.Threshold()
 
 
