@@ -80,10 +80,18 @@ sql7 = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 """ %current
 
+sql8 = """
+    create table D_value(
+	`id` int(5) not null auto_increment,
+	`hostname` varchar(20) not null,
+	`current` varchar(20) not null,
+	`value` float not null,
+	 PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+"""
 
-
-sql_list = [sql1,sql2,sql3,sql4,sql5,sql6,sql7]
-
-db = Mysql()
-for item in sql_list:
-    db.write(item)
+def init():
+    sql_list = [sql1,sql2,sql3,sql4,sql5,sql6,sql7,sql8]
+    db = Mysql()
+    for item in sql_list:
+        db.write(item)
