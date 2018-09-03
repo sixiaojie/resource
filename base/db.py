@@ -1,5 +1,6 @@
 import pymysql
-from base import base
+#from base import base
+import base
 
 class Mysql(object):
     def __init__(self):

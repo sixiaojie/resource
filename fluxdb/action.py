@@ -120,6 +120,16 @@ class Action(object):
             sql = "insert into group_aggres_%s(hostname,avg_value,max_value,min_value,`current`) values('%s',%f,%f,%f,'%s')" %(current,item["tags"]["groupname"],round(float(item["values"][0][1]),2),round(float(item["values"][0][2]),2),round(float(item["values"][0][3]),2),item["tags"]["hours"])
             self.db.write(sql)
 
+    def Copy_table_common(self):
+        table_name=["host_aggres","threshold","gthreshold","biz_info","groupnamecount","group_aggres"]
+        for item in table_name:
+            self.db.write("drop table %s" %item)
+	    self.db.write("create table %s select * from %s_%s" %(item,item,current))
+
+    def D_value(self):
+        self.db.write("truncate D_value")
+        self.db.write("insert into D_value(hostname,value,current) select hostname,(max_value-min_value) as D_value,current from host_aggres order by D_value desc;")
+
 
 if __name__ == "__main__":
     action = Action()

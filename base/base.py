@@ -10,8 +10,8 @@ class Base(object):
         self.client = influxdb.InfluxDBClient(self.parser.get("server","host"),self.parser.getint("server","port"),self.parser.get("server","username"),self.parser.get("server","password"),self.parser.get("server","dbname"))
 
     def configparser(self):
-        if os.path.exists(self.configfile) is True:
-            self.configfile = "../config/conf.ini"
+        if os.path.exists(self.configfile) is False:
+            self.configfile = "/data/www/wwwroot/resource/config/conf.ini"
         cf = configparser.ConfigParser()
         cf.read(self.configfile)
         return cf
