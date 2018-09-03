@@ -1,3 +1,4 @@
+#encoding:utf-8
 from base import base
 from base import db
 from base import common

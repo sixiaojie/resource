@@ -80,10 +80,9 @@ sql7 = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 """ %current
 
+def init():
+    sql_list = [sql1,sql2,sql3,sql4,sql5,sql6,sql7]
+    db = Mysql()
+    for item in sql_list:
+        db.write(item)
 
-
-sql_list = [sql1,sql2,sql3,sql4,sql5,sql6,sql7]
-
-db = Mysql()
-for item in sql_list:
-    db.write(item)
