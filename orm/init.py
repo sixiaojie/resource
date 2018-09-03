@@ -1,11 +1,12 @@
 import time
-from datetime import datetime,timedelta
+from base import common
 
 
 from base.db import Mysql
 
-current = str(time.strftime("%Y_%m",time.localtime(int(time.time()))))
-last_month=str((datetime.now()-timedelta(days=30)).strftime("%Y_%m"))
+
+current = common.current
+last_month=common.last_month
 
 sql1 = """
    CREATE TABLE  if NOT EXISTS  `threshold_%s` (
@@ -55,8 +56,33 @@ sql5 = """
     ) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8
 """
 
+sql6 = """
+    create table if not exists `host_aggres_%s`(
+      `id` int not null auto_increment,
+      `hostname` VARCHAR(20) NOT NULL,
+      `avg_value` FLOAT(10) not NULL,
+      `max_value` FLOAT(10) not null,
+      `min_value` FLOAT(10) not NULL,
+      `current` VARCHAR(15) not null,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+""" %current
 
-sql_list = [sql1,sql2,sql3,sql4,sql5]
+sql7 = """
+    create table if not exists `group_aggres_%s`(
+      `id` int not null auto_increment,
+      `hostname` VARCHAR(20) NOT NULL,
+      `avg_value` FLOAT(10) not NULL,
+      `max_value` FLOAT(10) not null,
+      `min_value` FLOAT(10) not NULL,
+      `current` VARCHAR(15) not null,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+""" %current
+
+
+
+sql_list = [sql1,sql2,sql3,sql4,sql5,sql6,sql7]
 
 db = Mysql()
 for item in sql_list:

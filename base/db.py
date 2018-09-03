@@ -1,11 +1,13 @@
 import pymysql
+from base import base
 
 class Mysql(object):
     def __init__(self):
         self.db = self._connect()
 
     def _connect(self):
-        db = pymysql.connect(host="localhost", user="root", password="", db="sijie", port=3306)
+        conf = base.Base()
+        db = pymysql.connect(host=conf.parser.get("mysql","host"), user=conf.parser.get("mysql","username"), password=conf.parser.get("mysql","password"), db=conf.parser.get("mysql","dbname"), port=conf.parser.getint("mysql","port"))
         return db
 
     def closed(self):
@@ -17,6 +19,7 @@ class Mysql(object):
             cur.execute(sql)
             self.db.commit()
         except Exception as e:
+            print(str(e))
             self.db.rollback()
 
     def read(self,sql):
