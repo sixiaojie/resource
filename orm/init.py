@@ -43,6 +43,7 @@ sql4 = """
     CREATE TABLE if NOT EXISTS `groupnamecount_%s` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `groupname` varchar(20) NOT NULL,
+  `groupfullname` varchar(40) not NULL,
   `count` int(5) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8
@@ -51,6 +52,7 @@ sql4 = """
 sql5 = """
     create table if not exists `increment`(
     `groupname` varchar(20) NOT NULL,
+    `groupfullname` VARCHAR(40) not null,
     `count` int(5) DEFAULT NULL,    
     PRIMARY KEY (`groupname`)
     ) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8
@@ -81,7 +83,7 @@ sql7 = """
 """ %current
 
 sql8 = """
-    create table D_value(
+    create table if not exists D_value(
 	`id` int(5) not null auto_increment,
 	`hostname` varchar(20) not null,
 	`current` varchar(20) not null,
@@ -90,9 +92,21 @@ sql8 = """
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 """
 
+sql9 = """
+  CREATE TABLE if not exists `biz_info_%s` (
+  `firstname` varchar(30) NOT NULL,
+  `firstfullname` varchar(30) NOT NULL,
+  `secondname` varchar(30) NOT NULL,
+  `secondfullname` varchar(30) NOT NULL,
+  `hostname` varchar(20) NOT NULL,
+  `ip` varchar(20) NOT NULL,
+  PRIMARY KEY (`ip`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+""" %current
+
 
 def init():
-    sql_list = [sql1,sql2,sql3,sql4,sql5,sql6,sql7,sql8]
+    sql_list = [sql1,sql2,sql4,sql5,sql6,sql7,sql8,sql9]
     db = Mysql()
     for item in sql_list:
         db.write(item)

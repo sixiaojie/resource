@@ -6,6 +6,9 @@ import time
 from base import base
 
 client = base.Base()
+import redis
+
+red = redis.Redis(host="127.0.0.1")
 
 host=[]
 l = multiprocessing.Lock()
@@ -14,20 +17,19 @@ def lockclient(sql):
     data = client.execute(sql)
     l.release()
     return data
-a = lockclient("select min(*) from cpu group by groupname,hostname;")
+a = lockclient("select min(*) from \"cpu.idle\" group by endpoint;")
 b = {}
 for item in a["series"]:
-    b[item["tags"]["hostname"]] = item["tags"]["groupname"]
-    host.append(item["tags"]["hostname"])
+    host.append(item["tags"]["endpoint"])
 def writefile(i):
     hostname = host[i]
     path = "files/"+hostname+".log"
-    groupname = b[hostname]
+    groupname = red.get(hostname).decode('utf-8')
     item_list = client.parser.get("server","monitor").split(",")
     with open(path,"w+") as f:
       try:
          for item in item_list:
-            url = "select mean(*) as avg,min(value),max(value) from %s where \"hostname\"='%s' group by time(60m)" %(item,hostname)
+            url = "select mean(*) as avg,min(value),max(value) from \"%s\" where \"endpoint\"='%s' group by time(60m)" %(item,hostname)
             data = lockclient(url)
             if data.get("series") is None:
                   continue

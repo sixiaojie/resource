@@ -1,6 +1,6 @@
+
 import pymysql
-#from base import base
-import base
+from base import base
 
 class Mysql(object):
     def __init__(self):
@@ -20,7 +20,6 @@ class Mysql(object):
             cur.execute(sql)
             self.db.commit()
         except Exception as e:
-            print(str(e))
             self.db.rollback()
 
     def read(self,sql):

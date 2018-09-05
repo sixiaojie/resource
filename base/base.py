@@ -4,14 +4,15 @@ import configparser
 
 
 class Base(object):
-    def __init__(self,configfile="../config/conf.ini"):
+    def __init__(self,configfile="config/conf.ini",dbname="falcon"):
         self.configfile = configfile
         self.parser = self.configparser()
-        self.client = influxdb.InfluxDBClient(self.parser.get("server","host"),self.parser.getint("server","port"),self.parser.get("server","username"),self.parser.get("server","password"),self.parser.get("server","dbname"))
+        self.dbname = dbname
+        self.client = influxdb.InfluxDBClient(self.parser.get("server","host"),self.parser.getint("server","port"),self.parser.get("server","username"),self.parser.get("server","password"),self.dbname)
 
     def configparser(self):
         if os.path.exists(self.configfile) is False:
-            self.configfile = "/data/www/wwwroot/resource/config/conf.ini"
+            self.configfile = "../config/conf.ini"
         cf = configparser.ConfigParser()
         cf.read(self.configfile)
         return cf
